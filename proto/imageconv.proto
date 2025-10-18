@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package imageconv;
+
+option go_package = "HYH-Blog-Gin/proto/imageconvpb;imageconvpb";
+
+service ImageService {
+  // 接收任意图片字节并返回 webp 字节
+  rpc ConvertImage (ImageRequest) returns (ImageReply);
+}
+
+// 传入图片二进制（任意格式）以及期望的 quality（0-100，推荐 80）
+message ImageRequest {
+  bytes data = 1;
+    int32 quality = 2;
+}
+
+// 返回 webp 二进制
+message ImageReply {
+  bytes data = 1;
+}

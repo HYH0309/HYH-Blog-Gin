@@ -27,13 +27,13 @@ type LoginRequest struct {
 }
 
 type RegisterResponse struct {
-	ID       uint   `json:"id"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
+	ID       uint   `json:"id" example:"1"`
+	Email    string `json:"email" example:"user@example.com"`
+	Username string `json:"username" example:"alice"`
 }
 
 type LoginResponse struct {
-	Token string `json:"token"`
+	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 }
 
 // NewUserHandler 创建并返回 UserHandler 实例（使用 service 层和 JWT 服务）。
@@ -41,7 +41,16 @@ func NewUserHandler(svc services.UserService, jwt *auth.JWTService) *UserHandler
 	return &UserHandler{svc: svc, jwt: jwt}
 }
 
-// Register 处理用户注册请求。
+// Register 注册新用户
+// @Summary 用户注册
+// @Description 使用邮箱、用户名和密码注册新用户
+// @Tags 用户
+// @Accept json
+// @Produce json
+// @Param payload body RegisterRequest true "注册信息"
+// @Success 201 {object} RegisterResponse
+// @Failure 400 {object} map[string]interface{}
+// @Router /api/v1/register [post]
 func (h *UserHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -62,7 +71,16 @@ func (h *UserHandler) Register(c *gin.Context) {
 	utils.Created(c, RegisterResponse{ID: user.ID, Email: user.Email, Username: user.Username})
 }
 
-// Login 处理用户登录请求。
+// Login 用户登录
+// @Summary 用户登录
+// @Description 使用用户名或邮箱与密码登录，返回 JWT Token
+// @Tags 用户
+// @Accept json
+// @Produce json
+// @Param payload body LoginRequest true "登录信息"
+// @Success 200 {object} LoginResponse
+// @Failure 401 {object} map[string]interface{}
+// @Router /api/v1/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -90,9 +108,18 @@ func (h *UserHandler) Login(c *gin.Context) {
 	utils.OK(c, LoginResponse{Token: token})
 }
 
-// GetProfile 获取当前用户的个人资料。
+// GetProfile 获取当前用户信息
+// @Summary 获取个人信息
+// @Description 获取当前登录用户的个人资料（需要鉴权）
+// @Tags 用户
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} handlers.UserSwagger
+// @Failure 401 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/user/profile [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
-	id, ok := getUserIDFromContext(c)
+	id, ok := utils.GetUserIDFromContext(c)
 	if !ok {
 		utils.Unauthorized(c, "unauthorized")
 		return

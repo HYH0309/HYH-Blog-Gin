@@ -1,149 +1,169 @@
 # HYH-Blog-Gin
 
-一个基于 Go + Gin 的轻量级博客/笔记后端脚手架，内置用户注册/登录（JWT 鉴权）、笔记 CRUD、标签多对多关联、分页等基础能力，开箱可用于个人博客、知识卡片、随笔记录等场景。
+这是一个基于 Go + Gin 的轻量级博客后端示例工程，包含 HTTP REST API、PostgreSQL 数据存储、Redis 缓存、以及可选的图片转换 gRPC 后端。
 
-## 特色与作用
-- 面向个人/团队的“笔记/文章”数据服务
-- 标准分层：Handlers（HTTP）/ Repository（数据访问）/ Models（领域模型）
-- 鉴权内置：注册、登录、JWT 颁发与校验
-- 数据存储：PostgreSQL（GORM 自动迁移），Redis 预留（可做会话/缓存）
-- 生产可扩展：中间件、错误处理、日志与配置结构化
+## 核心功能
+- 用户注册 / 登录（JWT 鉴权）
+- 笔记（notes）的增删改查，支持标签（tags）管理
+- 图片上传/存储（本地静态存储 + 可选 gRPC 转换服务）
+- Redis 用于计数缓存（views/likes）与加速，后台任务负责定期同步到 Postgres
+- Docker 和 docker-compose 支持本地一键启动
+- OpenAPI / Swagger 文档（项目中的 `api/API.md` 提供接口概要）
 
-## 统一响应格式（Unified API Response）
-所有 HTTP 接口统一返回以下结构：
+## 仓库结构（关键信息）
+- `cmd/server` - 应用启动与生命周期管理
+- `internal/config` - 配置加载（支持 `.env`）
+- `internal/database` - DB/Redis 客户端构建
+- `internal/handlers` - HTTP 处理器
+- `internal/services` - 业务逻辑层
+- `internal/repository` - 数据访问层（GORM）
+- `internal/cache` - 缓存抽象
+- `proto` - `imageconv.proto`：图片转换的 gRPC 定义
+- `Dockerfile`, `docker-compose.yaml` - 容器化支持
 
-```
-{
-  "code": number,          // 业务码：0 表示成功，非 0 表示失败（与 HTTP 状态码一致或自定义）
-  "message": string,       // 说明信息：如 "success"、"created"、具体错误描述
-  "data": any,             // 业务数据（可选）
-  "meta": {                // 分页信息（可选，仅列表接口返回）
-    "page": number,
-    "limit": number,
-    "total": number
-  }
-}
-```
+## 快速开始（开发）
+前提：已安装 Go 1.25+、Docker（可选）
 
-- 成功：`code = 0`，`message` 通常为 `success/created`，携带 `data`。
-- 失败：`code != 0`，与 HTTP 状态码对齐（如 400/401/403/404/500 等），`message` 为错误描述。
+1) 克隆并进入项目目录
 
-开发规范：
-- 统一响应类型定义在 `internal/models/response.go`
-- 统一返回工具在 `internal/utils/response.go`
-- Handler 通过 `utils.OK/Created/BadRequest/Unauthorized/...` 返回响应
+Windows (cmd.exe)：
 
-## 技术栈
-- 语言/框架：Go 1.21，Gin
-- ORM：GORM（PostgreSQL 驱动）
-- 鉴权：JWT（HS256）
-- 缓存/会话：Redis（可选）
-- 配置：dotenv（.env）
-- 密码：bcrypt（golang.org/x/crypto）
+    cd D:\dev\HYH-Blog\HYH-Blog-Gin
 
-## 目录结构
-```
-.
-├── cmd/
-│   └── server/
-│       └── main.go          # 程序入口，路由与依赖注入
-├── internal/
-│   ├── auth/                # JWT 服务
-│   ├── config/              # 配置加载
-│   ├── database/            # 数据库与 Redis 初始化
-│   ├── handlers/            # HTTP 处理器（用户、笔记）
-│   ├── middleware/          # 中间件（CORS、鉴权）
-│   ├── models/              # 领域模型（Base/User/Note/Tag）
-│   └── repository/          # 仓储实现（User/Note/Tag）
-├── api/
-│   └── docs/                # API 文档（Postman 集合）
-├── migrations/              # 迁移（预留，当前由 GORM 自动迁移）
-├── Dockerfile               # 占位
-├── docker-compose.yaml      # 占位
-├── .env.example             # 环境变量示例
-├── .env                     # 你的本地环境变量（已生成，可按需修改）
-└── go.mod
-```
+2) 使用本地 PostgreSQL + Redis（推荐用 docker-compose）
 
-## 配置
-通过 `.env` 或系统环境变量配置。关键项：
-- 服务器
-  - PORT（默认 8080）
-- PostgreSQL
-  - DB_HOST（默认 localhost）
-  - DB_PORT（默认 5432）
-  - DB_USER（默认 postgres）
-  - DB_PASSWORD（默认 postgres）
-  - DB_NAME（默认 postgres；示例 .env 中为 blog，可改回 postgres）
-  - DB_SSL_MODE（默认 disable）
-- Redis（可选）
-  - REDIS_HOST、REDIS_PORT、REDIS_PASSWORD、REDIS_DB
-- JWT
-  - JWT_SECRET（请在生产使用强随机值）
-  - JWT_EXPIRY（小时，默认 24）
+    docker compose up -d
 
-仓库已提供 `.env.example`，你也可以直接使用根目录 `.env`（已生成）。
+3) 配置环境变量
+- 将必要配置写入 `.env`（或使用环境变量覆盖）。常用项：
+  - `PORT`（默认 8080）
+  - `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT`
+  - `REDIS_HOST`, `REDIS_PORT`
+  - `JWT_SECRET` 等（见 `internal/config`）
 
-## 快速开始（Windows cmd）
-确保本机已安装 Go 1.21+、PostgreSQL 与（可选）Redis，并保证数据库凭据与 `.env` 匹配。
+4) 运行服务（开发模式）
 
-```cmd
-cd /d D:\dev\HYH-Blog\HYH-Blog-Gin
+Windows (cmd.exe)：
 
-:: 安装依赖（可选，首次运行 go run 会自动拉取）
-go mod tidy
+    go run ./cmd/server
 
-:: 启动服务
-go run .\cmd\server
-```
+5) 访问
+- API 文档参考：`api/API.md`
+- 默认监听：`http://localhost:8080`
 
-打开浏览器或终端访问：
-- 健康检查: http://localhost:8080/health
+## 构建与 Docker
 
-## API 概览
-公共接口：
-- POST /api/register
-  - body: { "email": string, "username": string, "password": string }
-  - 201: data = { id, email, username }
-- POST /api/login
-  - body: { "identifier": string, "password": string } // identifier 支持邮箱或用户名
-  - 200: data = { token }
+构建本地二进制：
 
-鉴权接口（需要请求头 Authorization: Bearer <token>）：
-- GET /api/user/profile
-- GET /api/notes?page=1&limit=10
-- POST /api/notes
-  - body: { "title": string, "content": string, "tags"?: string[], "public"?: bool }
-- GET /api/notes/:id
-- PUT /api/notes/:id
-  - body: { "title"?: string, "content"?: string, "tags"?: string[], "public"?: bool }
-- DELETE /api/notes/:id
+    go build -o bin/server ./cmd/server
 
-说明：
-- 标签为多对多（notes ⇄ tags），POST/PUT 支持覆盖式更新标签集合。
-- 当前示例未暴露“搜索接口”，但仓储层已具备相关能力，可按需补充 Handler 与路由。
+使用 Dockerfile 构建镜像并运行：
 
-## 运行时行为
-- 启动时自动连接 PostgreSQL 和（可选）Redis，并对 User/Note/Tag 执行 GORM 自动迁移。
-- 注册时对密码进行 bcrypt 哈希存储；登录成功后返回 JWT Token。
-- 鉴权中间件会解析 Bearer Token，并在上下文注入 userID。
+    docker build -t hyh-blog:latest .
+    docker run --rm -p 8080:8080 --env-file .env hyh-blog:latest
 
-## 常见问题
-- FATAL: password authentication failed
-  - 请检查 `.env` 中的 DB_USER/DB_PASSWORD/DB_NAME 是否与本地 Postgres 实际配置一致。
-- 数据库不存在
-  - 可创建目标数据库（如 blog），或把 DB_NAME 改为 postgres。
-- 跨域
-  - 默认 CORS 较宽松，生产可在 `internal/middleware/cors.go` 中收紧。
-- JWT 安全
-  - 生产必须修改 `JWT_SECRET`，并考虑 Token 过期策略、刷新机制等。
+或使用 docker-compose（会启动 Postgres / Redis）：
 
-## 下一步可扩展
-- 增加 swagger 文档（gin-swagger）
-- 统一错误码与响应体
-- 增加搜索接口、批量操作、回收站
-- 引入配置校验、结构化日志、追踪与指标
-- 单元测试与集成测试
+    docker compose up --build
 
----
-如果你需要一键的 docker-compose（Postgres + Redis + 本服务），或补充 API 文档与测试，我可以继续为你加入配置与脚本。
+## gRPC / Protobuf
+
+项目包含 `proto/imageconv.proto`，可用于生成 Go 的 protobuf/gRPC 代码：
+
+    protoc --proto_path=proto --go_out=. --go-grpc_out=. proto/imageconv.proto
+
+（需要安装 `protoc`, `protoc-gen-go`, `protoc-gen-go-grpc`）
+
+## 测试与静态检查
+
+- 运行单元测试：
+
+    go test ./...
+
+- 常用静态检查建议：
+  - go vet
+  - golangci-lint 或 staticcheck
+  - go fmt/gofmt 或 gofumpt
+
+## 常见问题与说明
+
+- 初始 README 中提到的网关示例（HTTP->gRPC）为仓库的一部分，但本项目同时包含完整的博客后端。`internal/pb/imageconvpb` 在早期实现中可能为占位，建议使用 protoc 生成的代码替换占位实现以确保兼容。
+- `api/API.md` 描述了主要 HTTP 接口与返回格式（统一包装响应）。
+
+## 下一步（改进与优化建议）
+下面列出按优先级分组的改进建议，并在每一项给出具体动作或示例命令，方便你逐项落地。
+
+### 要点（高优先级）
+1) 安全与密钥/秘密管理
+   - 不要把敏感信息提交到仓库（`.env` 应加入 `.gitignore`）。
+   - 使用强随机 `JWT_SECRET`，并考虑使用短期访问 + 刷新 token 流程。
+   - 在生产环境把密钥放到安全的 secret 管理系统（例如 Vault、云平台 Secret Manager）。
+
+2) 数据库迁移与版本管理
+   - 引入迁移工具（推荐 `golang-migrate/migrate` 或 `pressly/goose`），将 schema 建表与变更以可重复脚本管理。
+   - 在 `docker-compose` 或 CI 中自动运行迁移。
+
+3) 输入验证与上传安全
+   - 限制上传文件大小（在 Gin 中使用 `c.Request.Body = http.MaxBytesReader(...)` 或 `c.Request.ParseMultipartForm(maxMemory)`）。
+   - 验证文件类型（magic bytes / MIME sniffing），并对文件名进行去除/重写以避免路径遍历。
+
+4) 日志与可观测性
+   - 使用结构化日志（例如 `zap` 或 `logrus`），便于采集与查询。
+   - 添加请求/响应链路日志（trace id）、慢查询日志与错误上下文。
+   - 暴露 /healthz、/readyz 以及 Prometheus metrics（`promhttp`）以便平台监控。
+
+5) 超时、上下文与资源管理
+   - 对外部调用（数据库、Redis、gRPC）传递 `context` 并使用合理超时/重试策略，防止请求堆积。
+   - 为长时间运行任务使用 worker/队列并限制并发。
+
+### 中等优先级
+6) 测试覆盖与 CI
+   - 编写单元测试（services、repository 的核心逻辑），并为 HTTP handlers 添加集成测试（httptest 或基于 docker-compose 的端到端测试）。
+   - 增加 GitHub Actions（或其他 CI）来运行 `go test`、`go vet`、`golangci-lint` 和构建镜像。
+
+7) 代码质量与静态分析
+   - 配置 `golangci-lint`（或 `staticcheck`）并在 CI 中运行。
+   - 确保 `go mod tidy` 保持依赖整洁、定期审查依赖升级（`dependabot`）。
+
+8) gRPC 与 proto 工作流
+   - 把生成的 pb 文件纳入构建流程：在 CI 中运行 `protoc` 以确保 proto 与代码同步。
+   - 为 gRPC 客户端添加超时/断路器（例如使用 `resilience` 模式或 `go-retryablehttp` 的思路）。
+
+### 低优先级 / 可选
+9) 性能与缓存策略
+   - Redis 缓存时考虑 key TTL、缓存一致性与并发竞争；`StartCounterSync` 已有良好设计，但注意错误恢复与幂等性。
+   - 对热点查询应用适当索引与分页策略，避免全表扫描。
+
+10) 镜像与部署优化
+   - Docker 镜像可以使用 `distroless` 或更小的基础镜像来缩小体积。
+   - 考虑多阶段构建并启用 build cache；已使用 multi-stage。
+
+### 具体小修建议（可直接实施）
+- 在 `router` 层添加一个简单的 `GET /healthz` 与 `GET /readyz`。
+- 在文件上传 handler 中设置最大上传大小（例如 10 MiB）并校验 MIME。
+- 在 `cmd/server/app.go` 的 `WaitForShutdown` 中，将 shutdown timeout 参数化为配置项（而不是硬编码 5s）。
+- 为 `StartCounterSync` 日志添加计数成功/失败的统计信息，方便定位异常。
+- 在 `internal/utils/user_context.go` 的 `GetUserIDFromContext` 中增加对 `json.Number` 或 `float64` 的兼容（如果某些中间件/框架把 id 存为这些类型）。
+
+### 建议的 GitHub Action（最小）：
+- 在 `.github/workflows/ci.yml` 中运行：
+  - checkout
+  - setup-go
+  - go mod download
+  - go test ./...
+  - golangci-lint run
+  - build
+
+## 迁移与数据（建议）
+- 使用 `migrate` 添加基础表迁移并在 `docker-compose` 的 app 服务启动前执行迁移。
+- 提供一个 `seed` 脚本来创建测试账户与示例数据，方便本地开发。
+
+## 安全审计/进一步工作
+- 对用户密码存储确认使用 `bcrypt` 或 `argon2`（检查 `internal/services/user_service.go` 中的实现）。
+- 添加速率限制（例如 `github.com/ulule/limiter` 或基于 Nginx/Ingress 层的速率策略），防止暴力破解登录或滥用上传。
+
+## 结束语
+
+我已经把项目的 README 替换为上面的更全面文档（包含快速启动与改进建议）。
+
+接下来我将运行代码质量/错误检查（`go vet`/编译错误检查）以确保编辑不会影响到代码状态，并给出一份需求覆盖的简短汇总。

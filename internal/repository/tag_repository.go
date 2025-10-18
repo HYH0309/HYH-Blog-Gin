@@ -36,8 +36,8 @@ func (r *tagRepository) FindByName(name string) (*models.Tag, error) {
 	return &tag, err
 }
 
-// FindOrCreate 批量按名称查找，不存在的按需创建，并保持输入顺序返回。
-func (r *tagRepository) FindOrCreate(names []string) ([]models.Tag, error) {
+// FindOrCreate 批量按名称查找，不存在的按需创建，并保持输入顺序返回，以及每个名称是否为新创建。
+func (r *tagRepository) FindOrCreate(names []string) ([]models.Tag, []bool, error) {
 	// 去重并保持输入顺序
 	order := make([]string, 0, len(names))
 	seen := make(map[string]struct{}, len(names))
@@ -48,13 +48,13 @@ func (r *tagRepository) FindOrCreate(names []string) ([]models.Tag, error) {
 		}
 	}
 	if len(order) == 0 {
-		return []models.Tag{}, nil
+		return []models.Tag{}, []bool{}, nil
 	}
 
 	// 查询已存在的标签
 	var existing []models.Tag
 	if err := r.db.Where("name IN ?", order).Find(&existing).Error; err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	byName := make(map[string]models.Tag, len(existing))
 	for _, t := range existing {
@@ -72,14 +72,14 @@ func (r *tagRepository) FindOrCreate(names []string) ([]models.Tag, error) {
 	// 并发安全创建：冲突时忽略插入，然后再统一重查
 	if len(toCreate) > 0 {
 		if err := r.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&toCreate).Error; err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	// 统一重查，确保返回持久化后的主键与字段
 	var final []models.Tag
 	if err := r.db.Where("name IN ?", order).Find(&final).Error; err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	finByName := make(map[string]models.Tag, len(final))
 	for _, t := range final {
@@ -87,12 +87,19 @@ func (r *tagRepository) FindOrCreate(names []string) ([]models.Tag, error) {
 	}
 
 	out := make([]models.Tag, 0, len(order))
+	created := make([]bool, 0, len(order))
 	for _, n := range order {
 		if t, ok := finByName[n]; ok {
 			out = append(out, t)
+			// created is true if the name was NOT present in the initial existing map
+			if _, existedBefore := byName[n]; existedBefore {
+				created = append(created, false)
+			} else {
+				created = append(created, true)
+			}
 		}
 	}
-	return out, nil
+	return out, created, nil
 }
 
 // FindByNote 查询某笔记的标签集合
@@ -113,4 +120,25 @@ func (r *tagRepository) Update(tag *models.Tag) error { return r.db.Save(tag).Er
 // Delete 根据主键删除标签
 func (r *tagRepository) Delete(id uint) error {
 	return r.db.Delete(&models.Tag{}, "id = ?", id).Error
+}
+
+// List 分页列出标签，按 updated_at 降序
+func (r *tagRepository) List(page, perPage int) ([]models.Tag, int64, error) {
+	if page < 1 {
+		page = 1
+	}
+	if perPage <= 0 {
+		perPage = 50
+	}
+	var tags []models.Tag
+	var total int64
+	q := r.db.Model(&models.Tag{})
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	offset := (page - 1) * perPage
+	if err := q.Order("updated_at desc").Offset(offset).Limit(perPage).Find(&tags).Error; err != nil {
+		return nil, 0, err
+	}
+	return tags, total, nil
 }

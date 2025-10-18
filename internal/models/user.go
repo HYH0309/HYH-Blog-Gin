@@ -5,8 +5,8 @@ import "gorm.io/gorm"
 // User 用户模型
 type User struct {
 	gorm.Model
-	Email    string `json:"email" gorm:"uniqueIndex;not null"`
-	Username string `json:"username" gorm:"uniqueIndex;not null"`
+	Email    string `json:"email" gorm:"uniqueIndex;not null" example:"user@example.com"`
+	Username string `json:"username" gorm:"uniqueIndex;not null" example:"alice"`
 	Password string `json:"-" gorm:"not null"`
 	Notes    []Note `json:"notes,omitempty" gorm:"foreignKey:AuthorID"`
 }

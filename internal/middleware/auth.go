@@ -4,12 +4,11 @@ import (
 	"strings"
 
 	"HYH-Blog-Gin/internal/auth"
+	"HYH-Blog-Gin/internal/config"
 	"HYH-Blog-Gin/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )
-
-const ContextUserIDKey = "userID"
 
 // AuthMiddleware 验证 Bearer Token，有效则将 userID 写入上下文
 func AuthMiddleware(jwt *auth.JWTService) gin.HandlerFunc {
@@ -27,7 +26,7 @@ func AuthMiddleware(jwt *auth.JWTService) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		c.Set(ContextUserIDKey, userID)
+		c.Set(config.ContextUserIDKey, userID)
 		c.Next()
 	}
 }

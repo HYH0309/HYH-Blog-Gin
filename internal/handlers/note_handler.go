@@ -1,19 +1,27 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"strconv"
 	"strings"
 
+	"HYH-Blog-Gin/internal/cache"
 	"HYH-Blog-Gin/internal/services"
 	"HYH-Blog-Gin/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
+// SimpleMessage 通用消息响应
+type SimpleMessage struct {
+	Message string `json:"message" example:"operation successful"`
+}
+
 // NoteHandler 处理笔记相关的请求，封装了笔记业务服务依赖。
 type NoteHandler struct {
-	svc services.NoteService
+	svc   services.NoteService
+	cache cache.Cache
 }
 
 // NoteCreateRequest 表示创建笔记的请求体。
@@ -33,13 +41,23 @@ type NoteUpdateRequest struct {
 }
 
 // NewNoteHandler 创建并返回 NoteHandler 实例（使用 service 层）。
-func NewNoteHandler(svc services.NoteService) *NoteHandler {
-	return &NoteHandler{svc: svc}
+func NewNoteHandler(svc services.NoteService, c cache.Cache) *NoteHandler {
+	return &NoteHandler{svc: svc, cache: c}
 }
 
-// GetNotes 获取当前用户的笔记列表，支持分页。
+// GetNotes 获取当前用户的笔记列表
+// @Summary 获取笔记列表
+// @Description 按作者分页获取笔记，返回分页结果（需要鉴权）
+// @Tags 笔记
+// @Produce json
+// @Param page query int false "页码"
+// @Param limit query int false "每页数量"
+// @Security BearerAuth
+// @Success 200 {array} handlers.NoteSwagger
+// @Failure 401 {object} map[string]interface{}
+// @Router /api/v1/notes [get]
 func (h *NoteHandler) GetNotes(c *gin.Context) {
-	userID, ok := getUserIDFromContext(c)
+	userID, ok := utils.GetUserIDFromContext(c)
 	if !ok {
 		utils.Unauthorized(c, "unauthorized")
 		return
@@ -61,9 +79,19 @@ func (h *NoteHandler) GetNotes(c *gin.Context) {
 	utils.Paginated(c, notes, page, limit, total)
 }
 
-// CreateNote 创建新笔记，并可同时处理标签。交由 service 完成。
+// CreateNote 创建新笔记
+// @Summary 创建笔记
+// @Description 创建笔记并可同时处理标签（需要鉴权）
+// @Tags 笔记
+// @Accept json
+// @Produce json
+// @Param payload body NoteCreateRequest true "笔记信息"
+// @Security BearerAuth
+// @Success 201 {object} handlers.NoteSwagger
+// @Failure 400 {object} map[string]interface{}
+// @Router /api/v1/notes [post]
 func (h *NoteHandler) CreateNote(c *gin.Context) {
-	userID, ok := getUserIDFromContext(c)
+	userID, ok := utils.GetUserIDFromContext(c)
 	if !ok {
 		utils.Unauthorized(c, "unauthorized")
 		return
@@ -93,9 +121,20 @@ func parseUintParam(s string) (uint, bool) {
 	return uint(v), true
 }
 
-// GetNote 获取单个笔记并校验权限（可能公开或作者可访问）。
+// GetNote 获取单个笔记
+// @Summary 获取笔记
+// @Description 根据 ID 获取单条笔记；如果笔记非公开且非作者则返回 403（需要鉴权）
+// @Tags 笔记
+// @Produce json
+// @Param id path int true "笔记 ID"
+// @Security BearerAuth
+// @Success 200 {object} handlers.NoteSwagger "example: {\"id\":1,\"title\":\"hello\"}"
+// @Failure 400 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/notes/{id} [get]
 func (h *NoteHandler) GetNote(c *gin.Context) {
-	userID, ok := getUserIDFromContext(c)
+	userID, ok := utils.GetUserIDFromContext(c)
 	if !ok {
 		utils.Unauthorized(c, "unauthorized")
 		return
@@ -119,12 +158,71 @@ func (h *NoteHandler) GetNote(c *gin.Context) {
 		utils.InternalError(c, err.Error())
 		return
 	}
+
+	// 异步增加阅读量（高频写，先写 Redis，再由后台同步至 DB）
+	if h.cache != nil {
+		go func(id uint) {
+			_, err := h.cache.Increment(context.Background(), cache.NewKeyGenerator().NoteViews(id), 1)
+			if err != nil {
+				return
+			}
+		}(id)
+	}
+
 	utils.OK(c, note)
 }
 
-// UpdateNote 更新笔记内容和标签（交由 service 处理事务与权限）。
+// LikeNote 点赞接口（示例）
+// @Summary 给笔记点赞
+// @Description 为指定笔记增加一个点赞（高频写，写入 Redis，后台同步到 DB）；需要鉴权
+// @Tags 笔记
+// @Accept json
+// @Produce json
+// @Param id path int true "笔记 ID"
+// @Security BearerAuth
+// @Success 200 {object} handlers.SimpleMessage
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Router /api/v1/notes/{id}/like [post]
+func (h *NoteHandler) LikeNote(c *gin.Context) {
+	userID, ok := utils.GetUserIDFromContext(c)
+	if !ok {
+		utils.Unauthorized(c, "unauthorized")
+		return
+	}
+	_ = userID // currently unused; could be used to prevent duplicate likes per user
+	idStr := c.Param("id")
+	id, ok := parseUintParam(idStr)
+	if !ok {
+		utils.BadRequest(c, "invalid id")
+		return
+	}
+	// 增加 likes 计数（仅写 Redis）
+	if h.cache != nil {
+		if _, err := h.cache.Increment(context.Background(), cache.NewKeyGenerator().NoteLikes(id), 1); err != nil {
+			utils.InternalError(c, "failed to increment like")
+			return
+		}
+	}
+	utils.OKMsg(c, "liked", nil)
+}
+
+// UpdateNote 更新笔记
+// @Summary 更新笔记
+// @Description 仅作者可更新笔记，支持部分字段更新并可替换标签集合（需要鉴权）
+// @Tags 笔记
+// @Accept json
+// @Produce json
+// @Param id path int true "笔记 ID"
+// @Param payload body NoteUpdateRequest true "更新内容（字段可选）"
+// @Security BearerAuth
+// @Success 200 {object} handlers.NoteSwagger
+// @Failure 400 {object} map[string]interface{}
+// @Failure 403 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/notes/{id} [put]
 func (h *NoteHandler) UpdateNote(c *gin.Context) {
-	userID, ok := getUserIDFromContext(c)
+	userID, ok := utils.GetUserIDFromContext(c)
 	if !ok {
 		utils.Unauthorized(c, "unauthorized")
 		return
@@ -156,9 +254,18 @@ func (h *NoteHandler) UpdateNote(c *gin.Context) {
 	utils.OK(c, note)
 }
 
-// DeleteNote 删除笔记，只允许作者删除。
+// DeleteNote 删除笔记
+// @Summary 删除笔记
+// @Description 仅作者可删除笔记（需要鉴权）
+// @Tags 笔记
+// @Param id path int true "笔记 ID"
+// @Security BearerAuth
+// @Success 200 {object} handlers.SimpleMessage
+// @Failure 403 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/v1/notes/{id} [delete]
 func (h *NoteHandler) DeleteNote(c *gin.Context) {
-	userID, ok := getUserIDFromContext(c)
+	userID, ok := utils.GetUserIDFromContext(c)
 	if !ok {
 		utils.Unauthorized(c, "unauthorized")
 		return
@@ -181,5 +288,5 @@ func (h *NoteHandler) DeleteNote(c *gin.Context) {
 		utils.InternalError(c, err.Error())
 		return
 	}
-	utils.NoContent(c)
+	utils.OKMsg(c, "note deleted successfully", nil)
 }

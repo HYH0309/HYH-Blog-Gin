@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"HYH-Blog-Gin/internal/config"
@@ -11,16 +12,7 @@ import (
 )
 
 // NewRedisClient 创建并返回一个 Redis 客户端。
-// 参数:
-//   - cfg: 应用配置，包含 Redis 的主机、端口、密码和 DB 编号。
-//
-// 行为:
-//   - 使用 cfg 构建连接地址并创建客户端实例。
-//   - 使用 2 秒超时对 Redis 进行 Ping 检查连通性。
-//   - 若 Ping 失败，关闭客户端并返回错误。
-//
-// 备注:
-//   - 超时和错误处理有助于在启动时发现不可用的 Redis 实例，避免后续运行时异常。
+// 如果 Redis 启用了认证但配置中未提供密码，会返回更友好的错误提示。
 func NewRedisClient(cfg *config.Config) (*redis.Client, error) {
 	// 构建 Redis 地址，如 "host:port"
 	addr := fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port)
@@ -39,6 +31,12 @@ func NewRedisClient(cfg *config.Config) (*redis.Client, error) {
 	// Ping 用于检查连接是否成功；若失败则关闭客户端并返回错误
 	if err := client.Ping(ctx).Err(); err != nil {
 		_ = client.Close()
+		// 如果服务端要求 AUTH 而配置中没有提供 password，给出更明确的提示
+		if strings.Contains(strings.ToLower(err.Error()), "noauth") || strings.Contains(strings.ToLower(err.Error()), "authentication required") {
+			if cfg.Redis.Password == "" {
+				return nil, fmt.Errorf("redis ping failed: %v; server requires AUTH but REDIS_PASSWORD is empty - set REDIS_PASSWORD in .env or Redis configuration", err)
+			}
+		}
 		return nil, err
 	}
 

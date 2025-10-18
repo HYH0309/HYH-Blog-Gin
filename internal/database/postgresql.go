@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"HYH-Blog-Gin/internal/config"
@@ -61,6 +60,7 @@ func NewDB(cfg *config.Config) (*DB, error) {
 		&models.User{},
 		&models.Note{},
 		&models.Tag{},
+		&models.Image{},
 	); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
@@ -76,13 +76,4 @@ func (db *DB) Close() error {
 		return err
 	}
 	return sqlDB.Close()
-}
-
-// isTrue 判断字符串是否表示“真”的值，支持 "1"/"true"/"yes"/"y"（不区分大小写）。
-func isTrue(v string) bool {
-	if v == "" {
-		return false
-	}
-	s := strings.ToLower(strings.TrimSpace(v))
-	return s == "1" || s == "true" || s == "yes" || s == "y"
 }

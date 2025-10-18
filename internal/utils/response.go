@@ -3,14 +3,28 @@ package utils
 import (
 	"net/http"
 
-	"HYH-Blog-Gin/internal/models"
-
 	"github.com/gin-gonic/gin"
 )
 
+// Response 是标准 API 响应格式。
+// Data 和 Meta 字段可选，根据具体接口需求决定是否包含。
+type Response struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+	Meta    *PageMeta   `json:"meta,omitempty"`
+}
+
+// PageMeta 包含分页相关的信息。
+type PageMeta struct {
+	Page  int   `json:"page"`
+	Limit int   `json:"limit"`
+	Total int64 `json:"total"`
+}
+
 // JSON 标准响应格式
-func JSON(c *gin.Context, status, code int, message string, data interface{}, meta *models.PageMeta) {
-	c.JSON(status, models.Response{
+func JSON(c *gin.Context, status, code int, message string, data interface{}, meta *PageMeta) {
+	c.JSON(status, Response{
 		Code:    code,
 		Message: message,
 		Data:    data,
@@ -40,7 +54,7 @@ func NoContent(c *gin.Context) {
 
 // Paginated 返回 200 和分页数据。
 func Paginated[T any](c *gin.Context, items []T, page, limit int, total int64) {
-	meta := &models.PageMeta{Page: page, Limit: limit, Total: total}
+	meta := &PageMeta{Page: page, Limit: limit, Total: total}
 	JSON(c, http.StatusOK, 0, "success", items, meta)
 }
 
