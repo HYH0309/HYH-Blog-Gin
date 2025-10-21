@@ -43,7 +43,7 @@ func RateLimitIP(rdb *redis.Client, action string, limit int64, window time.Dura
 		count, err := incrWithTTL(ctx, rdb, key, window)
 		if err != nil {
 			// 失败时不阻断请求，但记录到 gin 错误
-			c.Error(err)
+			_ = c.Error(err)
 			c.Next()
 			return
 		}
@@ -70,7 +70,7 @@ func RateLimitUser(rdb *redis.Client, action string, limit int64, window time.Du
 			defer cancel()
 			count, err := incrWithTTL(ctx, rdb, key, window)
 			if err != nil {
-				c.Error(err)
+				_ = c.Error(err)
 			} else if count > limit {
 				utils.TooManyRequests(c, "rate limit exceeded")
 				c.Abort()
