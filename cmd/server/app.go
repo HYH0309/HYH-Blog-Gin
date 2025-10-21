@@ -79,6 +79,10 @@ func InitializeApplication() *Application {
 // loadConfiguration 加载应用配置
 func (app *Application) loadConfiguration() {
 	app.Config = config.Load()
+	// 强制要求 JWT_SECRET 在任何环境下必须显式设置
+	if app.Config.JWT.Secret == "" {
+		log.Fatal("JWT_SECRET is not set; set it in environment or .env before starting the server")
+	}
 	log.Println("配置加载完成")
 }
 
@@ -154,12 +158,13 @@ func (app *Application) initializeServices() {
 	// register grpc cleanup if any
 	app.registerCleanup(grpcCleanup)
 
-	// local storage
-	staticDir := "./static/images"
-	if err := os.MkdirAll(staticDir, 0o755); err != nil {
-		log.Fatalf("创建静态目录失败: %v", err)
+	// 本地存储目录/URL 统一使用配置
+	uploadDir := app.Config.Server.UploadDir
+	uploadURL := app.Config.Server.UploadURLPrefix
+	if err := os.MkdirAll(uploadDir, 0o755); err != nil {
+		log.Fatalf("创建上传目录失败: %v", err)
 	}
-	storage := services.NewLocalStorage(staticDir, "/static/images")
+	storage := services.NewLocalStorage(uploadDir, uploadURL)
 	app.Services.ImageService = services.NewImageService(grpcClient, storage, 80, imageRepo)
 }
 
@@ -175,7 +180,7 @@ func (app *Application) initializeHandlers() {
 
 // initializeRouterAndServer 初始化路由和HTTP服务器
 func (app *Application) initializeRouterAndServer() {
-	app.Router = router.SetupRouter(app.JWTService, app.Handlers.UserHandler, app.Handlers.NoteHandler, app.Handlers.ImageHandler, app.Handlers.TagHandler)
+	app.Router = router.SetupRouter(app.Config, app.JWTService, app.Handlers.UserHandler, app.Handlers.NoteHandler, app.Handlers.ImageHandler, app.Handlers.TagHandler, app.Database, app.Redis)
 	app.Server = &http.Server{Addr: ":" + app.Config.Server.Port, Handler: app.Router}
 }
 

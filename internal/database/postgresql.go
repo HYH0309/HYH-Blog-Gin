@@ -18,7 +18,7 @@ type DB struct{ *gorm.DB }
 // NewDB 使用提供的配置创建并返回一个数据库连接。
 // - 构建 Postgres DSN 并打开 GORM 连接。
 // - 配置连接池参数并执行 Ping 检查连通性。
-// - 执行 AutoMigrate 以确保表结构存在。
+// - 可选执行 AutoMigrate（由配置控制）。
 // 返回已初始化的 *DB 或发生的错误。
 func NewDB(cfg *config.Config) (*DB, error) {
 	// 构建 DSN，例如 "host=... user=... password=... dbname=... port=... sslmode=..."
@@ -55,17 +55,20 @@ func NewDB(cfg *config.Config) (*DB, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	// 自动迁移模型以创建/更新表结构（会修改数据库，谨慎使用于生产）
-	if err := db.AutoMigrate(
-		&models.User{},
-		&models.Note{},
-		&models.Tag{},
-		&models.Image{},
-	); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: %w", err)
+	// 自动迁移模型以创建/更新表结构（可配置，建议生产禁用）
+	if cfg.Database.AutoMigrate {
+		if err := db.AutoMigrate(
+			&models.User{},
+			&models.Note{},
+			&models.Tag{},
+			&models.Image{},
+		); err != nil {
+			return nil, fmt.Errorf("failed to migrate database: %w", err)
+		}
+		log.Println("Database connection established and migrated successfully")
+	} else {
+		log.Println("Database connection established (AutoMigrate disabled)")
 	}
-
-	log.Println("Database connection established and migrated successfully")
 	return &DB{db}, nil
 }
 

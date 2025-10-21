@@ -32,6 +32,11 @@ func JSON(c *gin.Context, status, code int, message string, data interface{}, me
 	})
 }
 
+// WithStatus 使用统一响应体，但允许自定义 HTTP 状态码
+func WithStatus(status int, c *gin.Context, data interface{}) {
+	JSON(c, status, 0, "success", data, nil)
+}
+
 // OK 返回 200 和数据。
 func OK(c *gin.Context, data interface{}) {
 	JSON(c, http.StatusOK, 0, "success", data, nil)
@@ -81,6 +86,11 @@ func NotFound(c *gin.Context, message string) {
 // Conflict 返回 409 错误。
 func Conflict(c *gin.Context, message string) {
 	JSON(c, http.StatusConflict, http.StatusConflict, message, nil, nil)
+}
+
+// TooManyRequests 返回 429 错误（用于限流）
+func TooManyRequests(c *gin.Context, message string) {
+	JSON(c, http.StatusTooManyRequests, http.StatusTooManyRequests, message, nil, nil)
 }
 
 // InternalError 返回 500 错误。

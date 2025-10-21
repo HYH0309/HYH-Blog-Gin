@@ -242,53 +242,36 @@ func NewNoOpCache() Cache {
 }
 
 // Get 无操作实现
-func (noc *NoOpCache) Get(ctx context.Context, key string, dest interface{}) (bool, error) {
+func (noc *NoOpCache) Get(_ context.Context, _ string, _ interface{}) (bool, error) {
 	return false, nil
 }
 
 // Set 无操作实现
-func (noc *NoOpCache) Set(ctx context.Context, key string, value interface{}, ttl time.Duration) error {
+func (noc *NoOpCache) Set(_ context.Context, _ string, _ interface{}, _ time.Duration) error {
 	return nil
 }
 
 // Delete 无操作实现
-func (noc *NoOpCache) Delete(ctx context.Context, key string) error {
+func (noc *NoOpCache) Delete(_ context.Context, _ string) error {
 	return nil
 }
 
 // Increment 无操作实现
-func (noc *NoOpCache) Increment(ctx context.Context, key string, delta int64) (int64, error) {
+func (noc *NoOpCache) Increment(_ context.Context, _ string, _ int64) (int64, error) {
 	return 0, nil
 }
 
 // GetInteger 无操作实现
-func (noc *NoOpCache) GetInteger(ctx context.Context, key string) (int64, error) {
+func (noc *NoOpCache) GetInteger(_ context.Context, _ string) (int64, error) {
 	return 0, nil
 }
 
 // GetAndDelete 无操作实现
-func (noc *NoOpCache) GetAndDelete(ctx context.Context, key string) (int64, error) {
+func (noc *NoOpCache) GetAndDelete(_ context.Context, _ string) (int64, error) {
 	return 0, nil
 }
 
 // PopDirtyNoteIDs 无操作实现
-func (noc *NoOpCache) PopDirtyNoteIDs(ctx context.Context) ([]uint, error) {
+func (noc *NoOpCache) PopDirtyNoteIDs(_ context.Context) ([]uint, error) {
 	return nil, nil
-}
-
-// 兼容性包装器 - 保持向后兼容的全局函数
-
-// NoteKey 生成笔记缓存键（兼容旧代码）
-func NoteKey(id uint) string {
-	return NewKeyGenerator().Note(id)
-}
-
-// NoteViewsKey 生成笔记浏览量计数器键（兼容旧代码）
-func NoteViewsKey(id uint) string {
-	return NewKeyGenerator().NoteViews(id)
-}
-
-// NoteLikesKey 生成笔记点赞数计数器键（兼容旧代码）
-func NoteLikesKey(id uint) string {
-	return NewKeyGenerator().NoteLikes(id)
 }

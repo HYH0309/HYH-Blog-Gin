@@ -16,6 +16,9 @@ type Config struct {
 
 	// JWT 包含 JWT 令牌相关配置。
 	JWT JWTConfig
+
+	// RateLimit 包含各接口的限流配置。
+	RateLimit RateLimitConfig
 }
 
 // Load 尝试从项目根目录的 .env 文件加载环境变量（可选），
@@ -38,6 +41,9 @@ func Load() *Config {
 
 	// JWT 配置
 	cfg.JWT = loadJWT()
+
+	// RateLimit 配置
+	cfg.RateLimit = loadRateLimit()
 
 	return cfg
 }

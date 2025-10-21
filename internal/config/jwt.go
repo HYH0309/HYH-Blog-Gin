@@ -8,7 +8,7 @@ type JWTConfig struct {
 
 func loadJWT() JWTConfig {
 	return JWTConfig{
-		Secret: getEnv("JWT_SECRET", "change-me-in-prod"),
+		Secret: getEnv("JWT_SECRET", ""),
 		Expiry: getEnvInt("JWT_EXPIRY", 24),
 	}
 }

@@ -42,7 +42,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.ImageListResponse"
+                            "$ref": "#/definitions/handlers.ImageListResponse"
                         }
                     },
                     "500": {
@@ -90,7 +90,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.ImageUploadResponse"
+                            "$ref": "#/definitions/handlers.ImageUploadResponse"
                         }
                     },
                     "400": {
@@ -140,7 +140,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.SimpleBoolResponse"
+                            "$ref": "#/definitions/handlers.SimpleBoolResponse"
                         }
                     },
                     "400": {
@@ -188,7 +188,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/HYH-Blog-Gin_internal_services.ImageMeta"
+                            "$ref": "#/definitions/handlers.ImageMetaSwagger"
                         }
                     },
                     "400": {
@@ -228,7 +228,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.LoginRequest"
+                            "$ref": "#/definitions/handlers.LoginRequest"
                         }
                     }
                 ],
@@ -236,7 +236,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.LoginResponse"
+                            "$ref": "#/definitions/handlers.LoginResponse"
                         }
                     },
                     "401": {
@@ -284,7 +284,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal_handlers.NoteSwagger"
+                                "$ref": "#/definitions/handlers.NoteSwagger"
                             }
                         }
                     },
@@ -321,7 +321,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.NoteCreateRequest"
+                            "$ref": "#/definitions/handlers.NoteCreateRequest"
                         }
                     }
                 ],
@@ -329,7 +329,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.NoteSwagger"
+                            "$ref": "#/definitions/handlers.NoteSwagger"
                         }
                     },
                     "400": {
@@ -370,7 +370,7 @@
                     "200": {
                         "description": "example: {\\\"id\\\":1,\\\"title\\\":\\\"hello\\\"}",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.NoteSwagger"
+                            "$ref": "#/definitions/handlers.NoteSwagger"
                         }
                     },
                     "400": {
@@ -427,7 +427,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.NoteUpdateRequest"
+                            "$ref": "#/definitions/handlers.NoteUpdateRequest"
                         }
                     }
                 ],
@@ -435,7 +435,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.NoteSwagger"
+                            "$ref": "#/definitions/handlers.NoteSwagger"
                         }
                     },
                     "400": {
@@ -485,7 +485,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.SimpleMessage"
+                            "$ref": "#/definitions/handlers.SimpleMessage"
                         }
                     },
                     "403": {
@@ -536,7 +536,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.SimpleMessage"
+                            "$ref": "#/definitions/handlers.SimpleMessage"
                         }
                     },
                     "400": {
@@ -576,7 +576,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.RegisterRequest"
+                            "$ref": "#/definitions/handlers.RegisterRequest"
                         }
                     }
                 ],
@@ -584,7 +584,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.RegisterResponse"
+                            "$ref": "#/definitions/handlers.RegisterResponse"
                         }
                     },
                     "400": {
@@ -632,7 +632,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal_handlers.TagSwagger"
+                                "$ref": "#/definitions/handlers.TagSwagger"
                             }
                         }
                     },
@@ -669,7 +669,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.TagCreateRequest"
+                            "$ref": "#/definitions/handlers.TagCreateRequest"
                         }
                     }
                 ],
@@ -677,7 +677,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.TagSwagger"
+                            "$ref": "#/definitions/handlers.TagSwagger"
                         }
                     },
                     "400": {
@@ -725,7 +725,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.TagSwagger"
+                            "$ref": "#/definitions/handlers.TagSwagger"
                         }
                     },
                     "400": {
@@ -775,7 +775,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.TagUpdateRequest"
+                            "$ref": "#/definitions/handlers.TagUpdateRequest"
                         }
                     }
                 ],
@@ -783,7 +783,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.TagSwagger"
+                            "$ref": "#/definitions/handlers.TagSwagger"
                         }
                     },
                     "400": {
@@ -826,7 +826,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.SimpleMessage"
+                            "$ref": "#/definitions/handlers.SimpleMessage"
                         }
                     },
                     "400": {
@@ -865,7 +865,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_handlers.UserSwagger"
+                            "$ref": "#/definitions/handlers.UserSwagger"
                         }
                     },
                     "401": {
@@ -887,123 +887,22 @@
         }
     },
     "definitions": {
-        "HYH-Blog-Gin_internal_models.Note": {
+        "handlers.ImageListResponse": {
             "type": "object",
             "properties": {
-                "author": {
-                    "$ref": "#/definitions/HYH-Blog-Gin_internal_models.User"
-                },
-                "author_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "content": {
-                    "type": "string",
-                    "example": "Detailed content of the note..."
-                },
-                "cover_image": {
-                    "type": "string",
-                    "example": "/static/images/cover.webp"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_public": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "likes": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "summary": {
-                    "type": "string",
-                    "example": "A short summary"
-                },
-                "tags": {
+                "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/HYH-Blog-Gin_internal_models.Tag"
+                        "$ref": "#/definitions/services.ImageMeta"
                     }
                 },
-                "title": {
-                    "type": "string",
-                    "example": "Hello world"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "views": {
+                "total": {
                     "type": "integer",
-                    "example": 123
+                    "example": 2
                 }
             }
         },
-        "HYH-Blog-Gin_internal_models.Tag": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "tech"
-                },
-                "notes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/HYH-Blog-Gin_internal_models.Note"
-                    }
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "HYH-Blog-Gin_internal_models.User": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "user@example.com"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "notes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/HYH-Blog-Gin_internal_models.Note"
-                    }
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string",
-                    "example": "alice"
-                }
-            }
-        },
-        "HYH-Blog-Gin_internal_services.ImageMeta": {
+        "handlers.ImageMetaSwagger": {
             "type": "object",
             "properties": {
                 "mod_time": {
@@ -1016,38 +915,12 @@
                     "type": "integer"
                 },
                 "url": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "/static/images/abc.webp"
                 }
             }
         },
-        "gorm.DeletedAt": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
-                }
-            }
-        },
-        "internal_handlers.ImageListResponse": {
-            "type": "object",
-            "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/HYH-Blog-Gin_internal_services.ImageMeta"
-                    }
-                },
-                "total": {
-                    "type": "integer",
-                    "example": 2
-                }
-            }
-        },
-        "internal_handlers.ImageUploadResponse": {
+        "handlers.ImageUploadResponse": {
             "type": "object",
             "properties": {
                 "url": {
@@ -1056,7 +929,7 @@
                 }
             }
         },
-        "internal_handlers.LoginRequest": {
+        "handlers.LoginRequest": {
             "type": "object",
             "required": [
                 "identifier",
@@ -1072,7 +945,7 @@
                 }
             }
         },
-        "internal_handlers.LoginResponse": {
+        "handlers.LoginResponse": {
             "type": "object",
             "properties": {
                 "token": {
@@ -1081,7 +954,7 @@
                 }
             }
         },
-        "internal_handlers.NoteCreateRequest": {
+        "handlers.NoteCreateRequest": {
             "type": "object",
             "required": [
                 "content",
@@ -1105,11 +978,11 @@
                 }
             }
         },
-        "internal_handlers.NoteSwagger": {
+        "handlers.NoteSwagger": {
             "type": "object",
             "properties": {
                 "author": {
-                    "$ref": "#/definitions/HYH-Blog-Gin_internal_models.User"
+                    "$ref": "#/definitions/handlers.UserSwagger"
                 },
                 "author_id": {
                     "type": "integer",
@@ -1126,11 +999,9 @@
                 "createdAt": {
                     "type": "string"
                 },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "is_public": {
                     "type": "boolean",
@@ -1147,7 +1018,7 @@
                 "tags": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/HYH-Blog-Gin_internal_models.Tag"
+                        "$ref": "#/definitions/handlers.TagSwagger"
                     }
                 },
                 "title": {
@@ -1163,7 +1034,7 @@
                 }
             }
         },
-        "internal_handlers.NoteUpdateRequest": {
+        "handlers.NoteUpdateRequest": {
             "type": "object",
             "properties": {
                 "content": {
@@ -1183,7 +1054,7 @@
                 }
             }
         },
-        "internal_handlers.RegisterRequest": {
+        "handlers.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -1204,7 +1075,7 @@
                 }
             }
         },
-        "internal_handlers.RegisterResponse": {
+        "handlers.RegisterResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -1221,7 +1092,7 @@
                 }
             }
         },
-        "internal_handlers.SimpleBoolResponse": {
+        "handlers.SimpleBoolResponse": {
             "type": "object",
             "properties": {
                 "ok": {
@@ -1230,7 +1101,7 @@
                 }
             }
         },
-        "internal_handlers.SimpleMessage": {
+        "handlers.SimpleMessage": {
             "type": "object",
             "properties": {
                 "message": {
@@ -1239,7 +1110,7 @@
                 }
             }
         },
-        "internal_handlers.TagCreateRequest": {
+        "handlers.TagCreateRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1250,34 +1121,26 @@
                 }
             }
         },
-        "internal_handlers.TagSwagger": {
+        "handlers.TagSwagger": {
             "type": "object",
             "properties": {
                 "createdAt": {
                     "type": "string"
                 },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "name": {
                     "type": "string",
                     "example": "tech"
-                },
-                "notes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/HYH-Blog-Gin_internal_models.Note"
-                    }
                 },
                 "updatedAt": {
                     "type": "string"
                 }
             }
         },
-        "internal_handlers.TagUpdateRequest": {
+        "handlers.TagUpdateRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -1288,27 +1151,19 @@
                 }
             }
         },
-        "internal_handlers.UserSwagger": {
+        "handlers.UserSwagger": {
             "type": "object",
             "properties": {
                 "createdAt": {
                     "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "email": {
                     "type": "string",
                     "example": "user@example.com"
                 },
                 "id": {
-                    "type": "integer"
-                },
-                "notes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/HYH-Blog-Gin_internal_models.Note"
-                    }
+                    "type": "integer",
+                    "example": 1
                 },
                 "updatedAt": {
                     "type": "string"
@@ -1316,6 +1171,23 @@
                 "username": {
                     "type": "string",
                     "example": "alice"
+                }
+            }
+        },
+        "services.ImageMeta": {
+            "type": "object",
+            "properties": {
+                "mod_time": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         }

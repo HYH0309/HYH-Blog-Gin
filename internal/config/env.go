@@ -29,3 +29,13 @@ func getEnvInt(key string, def int) int {
 	}
 	return def
 }
+
+// 获取环境变量并转换为布尔值，支持 true/false、1/0、t/f、yes/no 等；若不存在或转换失败则返回默认值
+func getEnvBool(key string, def bool) bool {
+	if v := os.Getenv(key); v != "" {
+		if b, err := strconv.ParseBool(v); err == nil {
+			return b
+		}
+	}
+	return def
+}

@@ -12,7 +12,7 @@ func loadRedis() RedisConfig {
 	return RedisConfig{
 		Host:     getEnv("REDIS_HOST", "localhost"),
 		Port:     getEnv("REDIS_PORT", "6379"),
-		Password: getEnv("REDIS_PASSWORD", "123456"),
+		Password: getEnv("REDIS_PASSWORD", ""),
 		DB:       getEnvInt("REDIS_DB", 0),
 	}
 }

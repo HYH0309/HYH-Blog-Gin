@@ -170,7 +170,7 @@ func (h *ImageHandler) List(c *gin.Context) {
 // @Produce json
 // @Param url query string true "图片 URL 路径，例如 /static/images/..."
 // @Security BearerAuth
-// @Success 200 {object} services.ImageMeta
+// @Success 200 {object} ImageMetaSwagger
 // @Failure 400 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Router /api/v1/images/info [get]

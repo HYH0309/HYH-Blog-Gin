@@ -53,7 +53,7 @@ func NewNoteHandler(svc services.NoteService, c cache.Cache) *NoteHandler {
 // @Param page query int false "页码"
 // @Param limit query int false "每页数量"
 // @Security BearerAuth
-// @Success 200 {array} handlers.NoteSwagger
+// @Success 200 {array} NoteSwagger
 // @Failure 401 {object} map[string]interface{}
 // @Router /api/v1/notes [get]
 func (h *NoteHandler) GetNotes(c *gin.Context) {
@@ -87,7 +87,7 @@ func (h *NoteHandler) GetNotes(c *gin.Context) {
 // @Produce json
 // @Param payload body NoteCreateRequest true "笔记信息"
 // @Security BearerAuth
-// @Success 201 {object} handlers.NoteSwagger
+// @Success 201 {object} NoteSwagger
 // @Failure 400 {object} map[string]interface{}
 // @Router /api/v1/notes [post]
 func (h *NoteHandler) CreateNote(c *gin.Context) {
@@ -128,7 +128,7 @@ func parseUintParam(s string) (uint, bool) {
 // @Produce json
 // @Param id path int true "笔记 ID"
 // @Security BearerAuth
-// @Success 200 {object} handlers.NoteSwagger "example: {\"id\":1,\"title\":\"hello\"}"
+// @Success 200 {object} NoteSwagger "example: {\"id\":1,\"title\":\"hello\"}"
 // @Failure 400 {object} map[string]interface{}
 // @Failure 403 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
@@ -180,7 +180,7 @@ func (h *NoteHandler) GetNote(c *gin.Context) {
 // @Produce json
 // @Param id path int true "笔记 ID"
 // @Security BearerAuth
-// @Success 200 {object} handlers.SimpleMessage
+// @Success 200 {object} SimpleMessage
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Router /api/v1/notes/{id}/like [post]
@@ -195,6 +195,19 @@ func (h *NoteHandler) LikeNote(c *gin.Context) {
 	id, ok := parseUintParam(idStr)
 	if !ok {
 		utils.BadRequest(c, "invalid id")
+		return
+	}
+	// 点赞前校验笔记是否存在/可见
+	if _, err := h.svc.GetNoteByID(userID, id); err != nil {
+		if errors.Is(err, services.ErrNotFound) {
+			utils.NotFound(c, "note not found")
+			return
+		}
+		if errors.Is(err, services.ErrForbidden) {
+			utils.Forbidden(c, "forbidden")
+			return
+		}
+		utils.InternalError(c, err.Error())
 		return
 	}
 	// 增加 likes 计数（仅写 Redis）
@@ -216,7 +229,7 @@ func (h *NoteHandler) LikeNote(c *gin.Context) {
 // @Param id path int true "笔记 ID"
 // @Param payload body NoteUpdateRequest true "更新内容（字段可选）"
 // @Security BearerAuth
-// @Success 200 {object} handlers.NoteSwagger
+// @Success 200 {object} NoteSwagger
 // @Failure 400 {object} map[string]interface{}
 // @Failure 403 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
@@ -260,7 +273,7 @@ func (h *NoteHandler) UpdateNote(c *gin.Context) {
 // @Tags 笔记
 // @Param id path int true "笔记 ID"
 // @Security BearerAuth
-// @Success 200 {object} handlers.SimpleMessage
+// @Success 200 {object} SimpleMessage
 // @Failure 403 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Router /api/v1/notes/{id} [delete]

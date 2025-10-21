@@ -49,17 +49,17 @@ func doSyncOnce(ctx context.Context, gormDB *gorm.DB, c cache.Cache) error {
 
 	for _, id := range ids {
 		// read and clear counters
-		views, err := c.GetAndDelete(ctx, cache.NoteViewsKey(id))
+		views, err := c.GetAndDelete(ctx, cache.NewKeyGenerator().NoteViews(id))
 		if err != nil {
 			// if we cannot read, re-mark id dirty and continue
 			log.Printf("counter sync: failed GetAndDelete views for id=%d: %v", id, err)
-			_, _ = c.Increment(ctx, cache.NoteViewsKey(id), 0)
+			_, _ = c.Increment(ctx, cache.NewKeyGenerator().NoteViews(id), 0)
 			continue
 		}
-		likes, err := c.GetAndDelete(ctx, cache.NoteLikesKey(id))
+		likes, err := c.GetAndDelete(ctx, cache.NewKeyGenerator().NoteLikes(id))
 		if err != nil {
 			log.Printf("counter sync: failed GetAndDelete likes for id=%d: %v", id, err)
-			_, _ = c.Increment(ctx, cache.NoteLikesKey(id), 0)
+			_, _ = c.Increment(ctx, cache.NewKeyGenerator().NoteLikes(id), 0)
 		}
 
 		if views == 0 && likes == 0 {
@@ -88,12 +88,12 @@ func doSyncOnce(ctx context.Context, gormDB *gorm.DB, c cache.Cache) error {
 			log.Printf("counter sync: failed to update DB for id=%d (views=%d likes=%d): %v", id, views, likes, err)
 			// restore counts back to cache so we'll retry later
 			if views != 0 {
-				if _, ierr := c.Increment(ctx, cache.NoteViewsKey(id), views); ierr != nil {
+				if _, ierr := c.Increment(ctx, cache.NewKeyGenerator().NoteLikes(id), views); ierr != nil {
 					log.Printf("counter sync: failed to restore views to redis for id=%d: %v", id, ierr)
 				}
 			}
 			if likes != 0 {
-				if _, ierr := c.Increment(ctx, cache.NoteLikesKey(id), likes); ierr != nil {
+				if _, ierr := c.Increment(ctx, cache.NewKeyGenerator().NoteLikes(id), likes); ierr != nil {
 					log.Printf("counter sync: failed to restore likes to redis for id=%d: %v", id, ierr)
 				}
 			}

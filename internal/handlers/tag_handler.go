@@ -38,7 +38,7 @@ type TagUpdateRequest struct {
 // @Param page query int false "页码"
 // @Param per_page query int false "每页数量"
 // @Security BearerAuth
-// @Success 200 {array} handlers.TagSwagger
+// @Success 200 {array} TagSwagger
 // @Failure 401 {object} map[string]interface{}
 // @Router /api/v1/tags [get]
 func (h *TagHandler) List(c *gin.Context) {
@@ -66,7 +66,7 @@ func (h *TagHandler) List(c *gin.Context) {
 // @Produce json
 // @Param payload body TagCreateRequest true "标签信息"
 // @Security BearerAuth
-// @Success 201 {object} handlers.TagSwagger
+// @Success 201 {object} TagSwagger
 // @Failure 400 {object} map[string]interface{}
 // @Failure 409 {object} map[string]interface{}
 // @Router /api/v1/tags [post]
@@ -99,7 +99,7 @@ func (h *TagHandler) Create(c *gin.Context) {
 // @Produce json
 // @Param id path int true "标签 ID"
 // @Security BearerAuth
-// @Success 200 {object} handlers.TagSwagger
+// @Success 200 {object} TagSwagger
 // @Failure 400 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Router /api/v1/tags/{id} [get]
@@ -127,7 +127,7 @@ func (h *TagHandler) Get(c *gin.Context) {
 // @Param id path int true "标签 ID"
 // @Param payload body TagUpdateRequest true "更新内容"
 // @Security BearerAuth
-// @Success 200 {object} handlers.TagSwagger
+// @Success 200 {object} TagSwagger
 // @Failure 400 {object} map[string]interface{}
 // @Failure 409 {object} map[string]interface{}
 // @Router /api/v1/tags/{id} [put]
@@ -165,7 +165,7 @@ func (h *TagHandler) Update(c *gin.Context) {
 // @Tags 标签
 // @Param id path int true "标签 ID"
 // @Security BearerAuth
-// @Success 200 {object} handlers.SimpleMessage
+// @Success 200 {object} SimpleMessage
 // @Failure 400 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Router /api/v1/tags/{id} [delete]

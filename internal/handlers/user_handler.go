@@ -114,7 +114,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 // @Tags 用户
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} handlers.UserSwagger
+// @Success 200 {object} UserSwagger
 // @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Router /api/v1/user/profile [get]
